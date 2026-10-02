@@ -1,0 +1,898 @@
+{
+  "name": "PROYECTO NUTRISCORE 3.2",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "42c4aa2b-0d3d-426f-9c2f-c7115a400f03",
+              "leftValue": "={{ $json.body.barcode_number }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "4373cdf6-8ff2-458f-8cc8-cbc5d6b18e22",
+              "leftValue": "={{ $json.body.barcode_number }}",
+              "rightValue": "^\\d{8}$|^\\d{13}$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "293ccc66-8e31-405b-ad73-ac36a61da066",
+      "name": "Validación Código de Barras",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1200,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://world.openfoodfacts.org/api/v2/product/{{ $json.body.barcode_number }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "704f6366-8532-4429-a760-b56649b26050",
+      "name": "Consulta API Open Food Facts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -944,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "389cc33c-45ed-4477-afcf-fc70d76bbfc2",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "306e095f-8782-4803-90ff-58238d983d45",
+      "name": "Validación ¿Existe en Data Base de OFF?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -720,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0dc37cb7-74d8-412f-8f08-0e6677e6300f",
+              "name": "Resultado",
+              "value": "Éxito",
+              "type": "string"
+            },
+            {
+              "id": "0dc37cb7-74d8-412f-8f08-0e6677e6300f",
+              "name": "Producto",
+              "value": "={{ $json.product.product_name }}",
+              "type": "string"
+            },
+            {
+              "id": "ee1ac169-a32d-4fb0-86ec-4a4be5f72426",
+              "name": "Nutriscore",
+              "value": "={{ $json.product.nutriscore[\"2021\"].grade }}",
+              "type": "string"
+            },
+            {
+              "id": "0dc37cb7-74d8-412f-8f08-0e6677e6300f",
+              "name": "Azúcares por 100g",
+              "value": "={{ $json.product.nutriments.sugars_100g }}",
+              "type": "number"
+            },
+            {
+              "id": "b8e14ea6-36f4-4e8e-9837-4f816abd2ef2",
+              "name": "Grasas por 100g",
+              "value": "={{ $json.product.nutriments.fat }}",
+              "type": "number"
+            },
+            {
+              "id": "d390e4df-3621-43df-b2ca-56539200ae5c",
+              "name": "Sal por 100g",
+              "value": "={{ $json.product.nutriments.salt_100g }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0899ee90-a79f-4b86-9788-b22fd4617ec8",
+      "name": "RECOLECCIÓN INFORMACION NUTRICIONAL",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -432,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7b59e537-927d-4146-8a7f-ac641c1c1fbd",
+              "leftValue": "={{ $json.Nutriscore }}",
+              "rightValue": "a",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "348d3923-75f5-4b5a-bf78-7ec15d32bc9b",
+              "leftValue": "={{ $json.Nutriscore }}",
+              "rightValue": "b",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "de76ab5c-1a62-4745-9ff5-3027646e3b92",
+      "name": "CLASIFICACIÓN: NUTRISCORE ¿ES SALUDABLE?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -112,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3851b1aa-1109-40d5-bd91-19cc403f3957",
+              "name": "NUTRISCORE",
+              "value": "=tu nutriscore es {{ $json.Nutriscore }}, SALUDABLE",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6736e119-a741-4a10-9e33-376a564f0668",
+      "name": "NSCORE \"SALUDABLE\"",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        544,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4a73ad36-955f-4391-9460-bd0e426197d9",
+              "leftValue": "={{ $json.Nutriscore }}",
+              "rightValue": "c",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "15c92a98-232f-42ba-be59-e3222a5b01ce",
+      "name": "NSCORE  CLASIF NO SALUDABLE",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c25f4dfa-b142-4cb9-8120-be673f3035d6",
+              "name": "NUTRISCORE",
+              "value": "=tu nutriscore es {{ $json.Nutriscore }}, MODERADO",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "459ccf33-d924-4abf-8a5e-78c25c7d6f10",
+      "name": "NUTRISCORE \"MODERADO\"",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        544,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f772daf2-e645-4730-aa73-6cb3ad560173",
+              "name": "Nutriscore",
+              "value": "=tu nutriscore es {{ $json.Nutriscore }}, NO SALUDABLE",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a431f307-28d1-4bef-a808-7cdec23e29de",
+      "name": "NUTRISCORE \"NO SALUDABLE\"",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        544,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "73a7cd58-c353-45f3-add6-29d0102430d7",
+              "leftValue": "={{ $json[\"Azúcares por 100g\"] }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "71d33129-dc8d-410f-8924-308f2d96a2c9",
+              "leftValue": "={{ $json[\"Grasas por 100g\"] }}",
+              "rightValue": 17.5,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "46a82344-0aac-4ade-881f-979d2b9bb6a7",
+              "leftValue": "={{ $json[\"Sal por 100g\"] }}",
+              "rightValue": 1.5,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4c1b9270-97dd-4fa9-b01d-53dc09123389",
+      "name": "CLASIFICACIÓN NUTRIENTES ¿SON SALUDABLES?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -112,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "18d6a521-ab52-44e1-a762-d752dd1faf5d",
+              "name": "RESULT",
+              "value": "=¡Genial! el producto  {{ $json.Producto }} es SANO!",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "309a5d3b-2e09-4ccf-ac01-cfb57ba58447",
+      "name": "NUTRIENTES \"SALUDABLE\"",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        544,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bd4407ff-bbd7-4242-937f-7ca132a6cd03",
+              "leftValue": "={{ $json[\"Azúcares por 100g\"] }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "efac3481-fcb0-4af2-b1fe-a1eb38804a18",
+              "leftValue": "={{ $json[\"Grasas por 100g\"] }}",
+              "rightValue": 17.5,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "c53fb88c-85e0-4f22-8fff-80247f32f93f",
+              "leftValue": "={{ $json[\"Sal por 100g\"] }}",
+              "rightValue": 1.5,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5b11126b-e4b1-41d9-947c-8f86b492909f",
+      "name": "CLASIF NUTRIENTES NO SALUDABLE",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        240,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b140fb26-6075-4bd1-9a29-dc3b443957b9",
+              "name": "Vaya, ",
+              "value": "=El producto  {{ $json.Producto }} está bien... si lo consumes ocasionalemnte.\nsus azúcares por 100g son de {{ $json[\"Azúcares por 100g\"] }} \nsus grasas por 100g son de {{ $json[\"Grasas por 100g\"] }} \nsu contenido de sodio por 100g es de {{ $json[\"Sal por 100g\"] }}  \n\nTe animamos a que lo combines con algún otro producto saludable.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "996210b7-f0e8-4fb5-84ee-d9e2b8000cd6",
+      "name": "NUTRIENTES \"MODERADO\"",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        544,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1e497066-9d81-4ae2-b8de-ea1c14d789ac",
+              "name": "Vaya, los niveles nutricionales son preocupantes,",
+              "value": "=El producto  {{ $json.Producto }} no parece ser muy sano.\nsus azúcares por 100g son de {{ $json[\"Azúcares por 100g\"] }}\nsus grasas por 100g son de {{ $json[\"Grasas por 100g\"] }}\nsu contenido de sodio por 100g es de {{ $json[\"Sal por 100g\"] }}\n\nTe animamos a buscar otra alternativa",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ec59ba1d-9578-4fd5-92ac-656061fd672c",
+      "name": "NUTRIENTES \"NO SALUDABLE\"",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        560,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "id": "3ec00c07-0160-4437-b7c7-ab17fcc4b432",
+      "name": "MERGE NSCORE",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        752,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "id": "53e4a12d-1d80-49d5-8671-123daf7a41b5",
+      "name": "MERGE NUTRIENTES",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        768,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Eres un asistente nutricional. Con los datos del producto, retorna una valoración siguiendo EXACTAMENTE estas reglas.\n\nInput de producto:\nconsidera las siguientes 2 entradas: Nutriscore y Nutrientes\n  \nProducto: {{ $('RECOLECCIÓN INFORMACION NUTRICIONAL').item.json.Producto }}\nNutriscore: {{ $('RECOLECCIÓN INFORMACION NUTRICIONAL').item.json.Nutriscore }}\nAzúcares por 100g: {{ $('RECOLECCIÓN INFORMACION NUTRICIONAL').item.json['Azúcares por 100g'] }}\nGrasas por 100g: {{ $('RECOLECCIÓN INFORMACION NUTRICIONAL').item.json['Grasas por 100g'] }}\nSal por 100g: {{ $('RECOLECCIÓN INFORMACION NUTRICIONAL').item.json['Sal por 100g'] }}\n\n\n\nEvalúa el Nutriscore:  \na. A y B: Saludable       🟢\nb. C: Moderado            🟡\nc. D y E: No Saludable    🔴\n\nEvalúa los nutrientes:\numbrales por 100g: azúcares ALTO si >= 5, grasas ALTO si >= 17.5, sal ALTO si >= 1.5\nCuando azúcares, grasas y sal son BAJOS: Saludable\nCuando solo uno de los nutrientes es ALTO: Moderado\nCuando 2 o más nutrientes son ALTOS: No Saludable\n\n\nLógica interna (veredicto final combinando Nutriscore y nutrientes):   \nCuando nutrientes y Nutriscore son Saludable: Saludable   \nCuando uno de ellos es Moderado: Moderado   \nCuando uno de ellos es No Saludable: No Saludable   \nSi nutrientes o nutriscore no existe, retornar el mensaje de \"información insuficiente\" de una manera amigable e invitando a que busque otro producto en nuestra app. \n\nMensaje de salida:\nIncluye un encabezado que destaque \"INFORMACIÓN NUTRICIONAL de {{ $('RECOLECCIÓN INFORMACION NUTRICIONAL').item.json.Producto }}\" con emoticonos relevantes.\nEvaluar el nutriscore con cualquiera de los 3 emoticonos semáforo (🟢 verde, 🟡 amarillo, 🔴 rojo)  y su descripción (Saludable, Moderado o No Saludable\nValora los nutrientes con el mismo criterio (3 nutrientes bajos 🟢; 1 nutriente alto 🟡 y 2 o 3 nutrientes altos).\nNivel de preocupación con el mismo criterio (0 🟢, 1 🟡 y 2 o 3 🔴)\nTono amigable que aliente el consumo cuando sea Saludable o Moderado.   \nTono amigable pero preocupado cuando sea No Saludable. \n\nEjemplo de salida que debes mostrar tal cual está mostrado (incluye saltos de linea y espacios relevantes):\n\n\"INFORMACIÓN NUTRICIONAL para Nutella Biscuits croquants au coeur onctueux de Nutella®\n\n🔴 NUTRISCORE: E    No Saludable\n🔴 NUTRIENTES: No Saludable\n🔴 NIVEL PREOCUPACIÓN:  Alto\n\nEste delicioso biscuit tiene un sabor que encanta, pero su contenido de azúcares y grasas es bastante alto y su Nutriscore indica que no es la opción más saludable. Si lo vas a disfrutar, hazlo con moderación y compáralo con alternativas más equilibradas que puedas encontrar en nuestra app. ¡Tu bienestar es lo más importante!  ¿Te gustaría buscar otro producto con mejor perfil nutricional? ¡Explora la sección de opciones saludables y encuentra la alternativa perfecta para ti!\"\n",
+        "batching": {}
+      },
+      "id": "b69302e5-daef-4a7b-99ea-993bfadc7064",
+      "name": "IA RECOLECCIÓN Y VEREDICTO",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1136,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "id": "82394dda-a4b8-4341-b5be-2196d314310e",
+      "name": "Groq Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        704
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "WPIfTzl5UHzfM2ID",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ce7caae2-0b6c-44e7-9efe-14bb7683286f",
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e2b5e319-1e31-4ed6-a01b-d50c67b8bba1",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1568,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "barcode_number",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        -1408,
+        -16
+      ],
+      "id": "37902cd0-9029-46a1-bc85-825ae6838147",
+      "name": "Webhook",
+      "webhookId": "753c36b1-6183-4fe8-91c1-b7319074885c"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"Code\": \"Bad Request\",\n  \"Code\": 400,\n  \"Reason\": \"el código de barras está vacío o no es válido\",\n  \"Solution\":\"Intenta con un código de 8 o 13 números como el siguiente:80176800\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -1072,
+        400
+      ],
+      "id": "4b336300-93e3-436f-8a6c-517cc67ffcf6",
+      "name": "ERROR CÓDIGO VACÍO O NO VÁLIDO"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"Status\": \"Not Found\",\n  \"Code\": 404,\n  \"Reason\": \"el código de barras no existe en nuestra base de datos\",\n  \"Solution\":\"¿Quieres intentar con otro código\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -608,
+        400
+      ],
+      "id": "d016c7a4-1411-433c-b569-f55b79f3db4d",
+      "name": "ERROR CÓDIGO NO ENCONTRADO EN BASE DE DATOS"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1792,
+        144
+      ],
+      "id": "58222c75-ea12-4704-a248-402c116aa4f6",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Validación Código de Barras": {
+      "main": [
+        [
+          {
+            "node": "Consulta API Open Food Facts",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ERROR CÓDIGO VACÍO O NO VÁLIDO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consulta API Open Food Facts": {
+      "main": [
+        [
+          {
+            "node": "Validación ¿Existe en Data Base de OFF?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validación ¿Existe en Data Base de OFF?": {
+      "main": [
+        [
+          {
+            "node": "RECOLECCIÓN INFORMACION NUTRICIONAL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ERROR CÓDIGO NO ENCONTRADO EN BASE DE DATOS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RECOLECCIÓN INFORMACION NUTRICIONAL": {
+      "main": [
+        [
+          {
+            "node": "CLASIFICACIÓN: NUTRISCORE ¿ES SALUDABLE?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CLASIFICACIÓN NUTRIENTES ¿SON SALUDABLES?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLASIFICACIÓN: NUTRISCORE ¿ES SALUDABLE?": {
+      "main": [
+        [
+          {
+            "node": "NSCORE \"SALUDABLE\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NSCORE  CLASIF NO SALUDABLE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NSCORE \"SALUDABLE\"": {
+      "main": [
+        [
+          {
+            "node": "MERGE NSCORE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NSCORE  CLASIF NO SALUDABLE": {
+      "main": [
+        [
+          {
+            "node": "NUTRISCORE \"MODERADO\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NUTRISCORE \"NO SALUDABLE\"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NUTRISCORE \"MODERADO\"": {
+      "main": [
+        [
+          {
+            "node": "MERGE NSCORE",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "NUTRISCORE \"NO SALUDABLE\"": {
+      "main": [
+        [
+          {
+            "node": "MERGE NSCORE",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "CLASIFICACIÓN NUTRIENTES ¿SON SALUDABLES?": {
+      "main": [
+        [
+          {
+            "node": "NUTRIENTES \"SALUDABLE\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CLASIF NUTRIENTES NO SALUDABLE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NUTRIENTES \"SALUDABLE\"": {
+      "main": [
+        [
+          {
+            "node": "MERGE NUTRIENTES",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLASIF NUTRIENTES NO SALUDABLE": {
+      "main": [
+        [
+          {
+            "node": "NUTRIENTES \"MODERADO\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NUTRIENTES \"NO SALUDABLE\"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NUTRIENTES \"MODERADO\"": {
+      "main": [
+        [
+          {
+            "node": "MERGE NUTRIENTES",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "NUTRIENTES \"NO SALUDABLE\"": {
+      "main": [
+        [
+          {
+            "node": "MERGE NUTRIENTES",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "MERGE NSCORE": {
+      "main": [
+        [
+          {
+            "node": "IA RECOLECCIÓN Y VEREDICTO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE NUTRIENTES": {
+      "main": [
+        [
+          {
+            "node": "IA RECOLECCIÓN Y VEREDICTO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA RECOLECCIÓN Y VEREDICTO": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "IA RECOLECCIÓN Y VEREDICTO",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validación Código de Barras",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d94adddf-4347-4139-afdf-01820e896c8d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f0240fccf50b98e802640a6e7ae47d6adc84c954eb923060f9f6b06305e9fb93"
+  },
+  "nodeGroups": [],
+  "id": "Kf8OvcrTPbscFibM",
+  "tags": []
+}
